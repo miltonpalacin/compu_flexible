@@ -46,7 +46,6 @@ class ReceiverAgent(Agent):
         self.add_behaviour(b, template)
 
 
-
 if __name__ == "__main__":
     receiveragent = ReceiverAgent("rarias@chatterboxtown.us", "rarias")
     future = receiveragent.start()

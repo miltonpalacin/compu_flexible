@@ -1,5 +1,9 @@
-#from templates import make_metadata_with_body_template, make_reply, make_message
-import utilities
+# from templates import make_metadata_with_body_template, make_reply, make_message
+import fileHelper
+import dbHelper
+from messageHelper import make_metadata_with_body_template
+from messageHelper import make_message  #, make_reply,
+from messageHelper import encode_array, dencode_array
 import configNormalAgent as config
 import time
 from spade import quit_spade
@@ -10,8 +14,8 @@ from spade.behaviour import CyclicBehaviour, OneShotBehaviour
 # from credentials import xmpp_user_1
 # shared_files_path = "./shared_files"
 # directory_agent = xmpp_user_1
-#shared_files_path = ""
-#directory_agent = ""
+# shared_files_path = ""
+# directory_agent = ""
 
 
 class NormalAgent(Agent):
@@ -19,12 +23,18 @@ class NormalAgent(Agent):
     class JoinNetwork(OneShotBehaviour):
         async def run(self):
             print('Sending request to join network')
-            
-            files_list = utilities.get_files_list(shared_files_path)
-            join_template = make_metadata_with_body_template(performative='join', ontology='request', body=files_list)
-            msg = make_message(join_template, to=directory_agent)
-            await self.send(msg)
-            print('Join request sent')
+            # procesar todos los archivos a compartir
+            files = fileHelper.file_ist(config.agent_user, config.sf_path)
+            if files:
+                # Guardando todo en base de datos
+                dbHelper.save_files(files)
+
+                coded_message = encode_array(files)
+                join_template = make_metadata_with_body_template(performative='join', ontology='request', body=coded_message)
+                msg = make_message(join_template, to=config.directory_agent)
+                await self.send(msg)
+                print('Join request sent')
+
             self.exit_code = "Join request sent"
 
     # class WaitForFileListRequest(CyclicBehaviour):
