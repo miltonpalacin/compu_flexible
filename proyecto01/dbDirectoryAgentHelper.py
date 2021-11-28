@@ -26,7 +26,18 @@ sql_update_file = "UPDATE files_directory " + \
 sql_delete_file = "DELETE FROM files_directory " + \
                   "WHERE code = ? and agent = ?"
 
-sql_delete_all = "DELETE FROM files_directory"
+sql_delete_all = "DELETE FROM files_directory WHERE agent = ?"
+
+
+sql_select_name_search = "SELECT code, agent, name, ext, size " + \
+                         "FROM files_directory " + \
+                         "WHERE UPPER(name) LIKE UPPER('%'||?||'%') " + \
+                         "AND agent != ?"
+
+sql_select_ext_search = "SELECT code, agent, name, ext, size " + \
+                        "FROM files_directory " + \
+                        "WHERE UPPER(ext) LIKE UPPER('%'||?||'%') " + \
+                        "AND agent != ?"
 
 
 def activate_agent(agent):
@@ -56,13 +67,18 @@ def save_files_directory(agent, files):
 
         if len(files) > 0:
             if files[0] == "delete_all":
-                cur.execute(sql_delete_all)
+                cur.execute(sql_delete_all, (agent,))
             else:
                 for file in files:
                     if file["cru"] == "c":
-                        cur.execute(sql_insert_file, (file["code"], agent,
-                                    file["name"], file["ext"],
-                                    file["size"], file["owner"]))
+                        try:
+                            cur.execute(sql_insert_file, (file["code"], agent,
+                                        file["name"], file["ext"],
+                                        file["size"], file["owner"]))
+                        except Error:
+                            cur.execute(sql_update_file, (file["name"], file["ext"],
+                                                          file["size"], file["owner"],
+                                                          file["code"], agent))
                         public_array.append(file)
                     elif file["cru"] == "u":
                         cur.execute(sql_update_file, (file["name"], file["ext"],
@@ -79,3 +95,37 @@ def save_files_directory(agent, files):
         con.close()
 
     return public_array
+
+
+def search_for_file(agent, search_arr):
+    files_found = []
+    try:
+        con = sqlite3.connect(config.db_path)
+        cur = con.cursor()
+
+        search = search_arr[0]
+        by_ext = search_arr[1]
+
+        if by_ext:
+            cur.execute(sql_select_ext_search, (search, agent))
+        else:
+            cur.execute(sql_select_name_search, (search, agent))
+
+        rows = cur.fetchall()
+        for row in rows:
+            new_row = {}
+            new_row["code"] = row[0]
+            new_row["agent"] = row[1]
+            new_row["name"] = row[2]
+            new_row["ext"] = row[3]
+            new_row["size"] = row[4]
+            files_found.append(new_row)
+
+        con.commit()
+
+    except Error:
+        raise
+    finally:
+        con.close()
+
+    return files_found

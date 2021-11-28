@@ -8,19 +8,8 @@ def check_file_name(file_name: str) -> bool:
     if file_name is None:
         return False
 
-    if len(file_name) < 3:
+    if len(file_name) < 2:
         return False
-
-    # if "." not in file_name:
-    #     return False
-
-#     parts = file_name.split(".")
-
-#     if len(parts) > 2:
-#         return False
-
-#     if len(parts[0]) < 1 or len(parts[1]) < 1:
-#         return False
 
     return True
 
@@ -29,7 +18,7 @@ def check_file_ext(file_ext: str) -> bool:
     if file_ext is None:
         return False
 
-    if len(file_ext) < 6 and len(file_ext) > 2:
+    if len(file_ext) > 5 and len(file_ext) == 0:
         return False
 
     if "." in file_ext:
