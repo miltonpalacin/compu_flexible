@@ -8,7 +8,7 @@ from ast import literal_eval
 
 
 
-# dbHelper.save_initial_files(config.db_path, files)
+
 
 
 
@@ -59,13 +59,21 @@ print(hashFor(data2) + ':', data2)
 s = '[{"q": 1, "w": "qw"}, {"q": 2.23, "w": "er"}]'
 print(literal_eval(s))
 
-files = fileHelper.file_list(config.agent_user, config.sf_path)
+
 # files.append({'code': '{{aá', 'path': 'b@·~', 'name': '&%$', 'ext': '.', 'size': 23212.23})
-for file in files:
-    print(file)
+
 
 msg = encode(files)
 print(msg)
 arr = decode(msg)
 arr.append({'code': 'a', 'path': 'b', 'name': 'c', 'ext': 'd', 'size': 12.23})
 print(arr)
+
+
+files = fileHelper.file_list(config.agent_user, config.sf_path)
+file_end = dbHelper.save_initial_files(config.db_path, files)
+for file in file_end:
+    print(file)
+
+for file in files:
+    print(file)
