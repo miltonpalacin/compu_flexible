@@ -1,7 +1,7 @@
-import helper
-import dbDirectoryAgentHelper as dbHelper
-import messageHelper
-import configDirectoryAgent as config
+from libs.cross import helper
+from libs.directory import dbDirectoryAgentHelper as dbHelper
+from libs.cross import messageHelper
+from libs.directory import configDirectoryAgent as config
 
 import datetime
 import time
@@ -9,6 +9,10 @@ import asyncio
 from spade import quit_spade
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
+
+
+config.agent_user = "directory_agent"  # es xmpp_user
+config.agent_pass = "directory_agent"  # es xmpp_pass
 
 
 class DirectoryAgent(Agent):
@@ -21,13 +25,17 @@ class DirectoryAgent(Agent):
                     sender_name = helper.sanitize_sender_name(str(files_msg.sender))
                     dbHelper.activate_agent(sender_name)
                     files = messageHelper.decode_array(files_msg.body)
-                    public_files = dbHelper.save_files_directory(sender_name, files)
-                    coded_message = messageHelper.encode_array(public_files)
+                    is_ok = dbHelper.save_files_directory(sender_name, files)
+                    #coded_message = messageHelper.encode_array(public_files)
+                    message = "Sucessful" if is_ok else "Something went wrong"
 
-                    confirm_template = messageHelper.public_confirm_template(body=coded_message)
+                    confirm_template = messageHelper.public_confirm_template(body=message)
                     msg = messageHelper.make_message(confirm_template, to=str(files_msg.sender))
                     await self.send(msg)
-                    print("Data of files was published from the agent ", sender_name)
+                    if is_ok:
+                        print("Data of files were published from the agent", sender_name)
+                    else:
+                        print("Data of files were not published from the agent", sender_name)
                     print('-'*50)
             await asyncio.sleep(1)
 

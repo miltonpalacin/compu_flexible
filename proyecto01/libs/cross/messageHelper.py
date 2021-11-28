@@ -4,10 +4,6 @@ import base64
 from ast import literal_eval
 
 
-from spade.template import Template
-from spade.message import Message
-
-
 def make_message(template: Template, **kwargs) -> Message:
     def from_template_or_kwargs(attrname):
         try:

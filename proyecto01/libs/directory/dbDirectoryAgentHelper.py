@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-import configDirectoryAgent as config
+from libs.directory import configDirectoryAgent as config
 
 
 sql_activate_user = "UPDATE user " + \
@@ -19,9 +19,9 @@ sql_insert_file = "INSERT INTO files_directory " + \
               "(code, agent, name, ext, size, owner) " + \
               "VALUES (?, ?, ?, ?, ?, ?)"
 
-sql_update_file = "UPDATE files_directory " + \
-              "SET name = ?, ext = ?, size = ?, owner = ?" + \
-              "WHERE code = ? and agent = ?"
+# sql_update_file = "UPDATE files_directory " + \
+#               "SET name = ?, ext = ?, size = ?, owner = ?" + \
+#               "WHERE code = ? and agent = ?"
 
 sql_delete_file = "DELETE FROM files_directory " + \
                   "WHERE code = ? and agent = ?"
@@ -60,41 +60,41 @@ def activate_agent(agent):
 
 
 def save_files_directory(agent, files):
-    public_array = []
+    
     try:
         con = sqlite3.connect(config.db_path)
         cur = con.cursor()
 
-        if len(files) > 0:
-            if files[0] == "delete_all":
-                cur.execute(sql_delete_all, (agent,))
-            else:
-                for file in files:
-                    if file["cru"] == "c":
-                        try:
-                            cur.execute(sql_insert_file, (file["code"], agent,
-                                        file["name"], file["ext"],
-                                        file["size"], file["owner"]))
-                        except Error:
-                            cur.execute(sql_update_file, (file["name"], file["ext"],
-                                                          file["size"], file["owner"],
-                                                          file["code"], agent))
-                        public_array.append(file)
-                    elif file["cru"] == "u":
-                        cur.execute(sql_update_file, (file["name"], file["ext"],
-                                                      file["size"], file["owner"],
-                                                      file["code"], agent))
-                    elif file["cru"] == "r":
-                        cur.execute(sql_delete_file, (file["code"], agent))
+        #if len(files) > 0:
+            #if files[0] == "delete_all":
+        cur.execute(sql_delete_all, (agent,))
+            #else:
+        for file in files:
+            #if file["cru"] == "c":
+            #    try:
+            cur.execute(sql_insert_file, (file["code"], agent,
+                        file["name"], file["ext"],
+                        file["size"], file["owner"]))
+            #    except Error:
+            # cur.execute(sql_update_file, (file["name"], file["ext"],
+            #                               file["size"], file["owner"],
+            #                               file["code"], agent))
+            #    public_array.append(file)
+            # elif file["cru"] == "u":
+            #     cur.execute(sql_update_file, (file["name"], file["ext"],
+            #                                   file["size"], file["owner"],
+            #                                   file["code"], agent))
+            # elif file["cru"] == "r":
+            #     cur.execute(sql_delete_file, (file["code"], agent))
 
         con.commit()
-
+        return True
     except Error:
         raise
     finally:
         con.close()
 
-    return public_array
+    return False
 
 
 def search_for_file(agent, search_arr):

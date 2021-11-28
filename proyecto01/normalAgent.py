@@ -1,16 +1,20 @@
-import helper
-import fileHelper
-import dbNormalAgentHelper as dbHelper
-import messageHelper
-import configNormalAgent as config
+from libs.cross import helper
+from libs.agent import fileHelper
+from libs.agent import dbNormalAgentHelper as dbHelper
+from libs.cross import messageHelper
+from libs.agent import configNormalAgent as config
 import time
 import datetime
 import asyncio
 from spade import quit_spade
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
-#from spade.behaviour import OneShotBehaviour
 from spade.behaviour import PeriodicBehaviour
+
+# config.sf_path = "/DATA/code/python/comflex/proyecto01/"  # shared files
+# config.directory_agent = "directory_agent"
+# config.agent_user = "rarias"  # es xmpp_user
+# config.agent_pass = "rarias"  # es xmpp_pass
 
 
 class NormalAgent(Agent):
@@ -38,10 +42,12 @@ class NormalAgent(Agent):
             if files_msg:
                 sender_name = helper.sanitize_sender_name(str(files_msg.sender))
                 if files_msg.body is not None:
-                    files = messageHelper.decode_array(files_msg.body)
-                    dbHelper.confirm_agent_pub(files)
+                    message =str(files_msg.body)
+                    #files = messageHelper.decode_array(files_msg.body)
+                    #dbHelper.confirm_agent_pub(files)
                     config.trace and print("Publication confirmation has been received from",
-                          "'" + sender_name + "'", "to", "'" + config.agent_user + "'")
+                                           "'" + sender_name + "'", "to", "'" +
+                                           config.agent_user + "':", message)
                     config.trace and print('-'*50)
             await asyncio.sleep(1)
 
@@ -87,7 +93,7 @@ class NormalAgent(Agent):
         self.add_behaviour(behaviour=self.ReceiveAgentsList(), template=receive_agent_list_template)
 
 
-if __name__ == "__main__":
+def main():
     print("="*80)
     print('Welcome to the P2P network')
     print("="*80)
@@ -162,12 +168,5 @@ if __name__ == "__main__":
             normal_agent.stop()
             break
     print("\nNormal Agent finished")
-
-#         try:
-#             time.sleep(1)
-#         except KeyboardInterrupt:
-#             normal_agent.stop()
-#             break
-#     print('Agents finished')
 
     quit_spade()
